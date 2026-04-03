@@ -355,7 +355,7 @@ footer p{color:rgba(255,255,255,.4);font-size:.85rem}
 <!-- FOOTER -->
 <footer>
 <div class="container">
-<p>© خدمات طوارئ للسيارات في العراق </p>
+<p>© 2025 خدمات طوارئ للسيارات — العراق — جميع الحقوق محفوظة</p>
 <div class="social-links">
   <a href="#"><i class="fab fa-facebook"></i></a>
   <a href="#"><i class="fab fa-instagram"></i></a>
@@ -639,7 +639,9 @@ function confirmOrder(){
   const phone=document.getElementById('phoneInput').value;
   const svcName=svcNames[svc]||svc;
 
-  currentOrder={driver:nd,dist:dd,dist_dest:rd,price:pr,eta_val:et,carType,phone,svc,svcName};
+  const mapsLink = carLoc ? 'https://www.google.com/maps?q=' + carLoc[0] + ',' + carLoc[1] : '';
+  const destMapsLink = destLoc ? 'https://www.google.com/maps?q=' + destLoc[0] + ',' + destLoc[1] : '';
+  currentOrder={driver:nd,dist:dd,dist_dest:rd,price:pr,eta_val:et,carType,phone,svc,svcName,mapsLink,destMapsLink};
 
   document.getElementById('orderOverlay').classList.remove('active');
   document.getElementById('confirmedOv').classList.add('active');
@@ -662,6 +664,11 @@ function confirmOrder(){
     'نوع الخدمة: ' + svcName,
     'نوع السيارة: ' + carType,
     'رقم هاتف الزبون: ' + phone,
+    '─────────────────',
+    '📍 موقع السيارة (اضغط للفتح):',
+    mapsLink,
+    (destMapsLink ? '🏁 الوجهة (اضغط للفتح):\n' + destMapsLink : ''),
+    '─────────────────',
     'السائق المعين: ' + nd.name,
     'هاتف السائق: ' + nd.phone,
     'رقم اللوحة: ' + nd.plate,
@@ -695,6 +702,11 @@ function submitCancel(){
     'نوع الخدمة: ' + (currentOrder.svcName||''),
     'نوع السيارة: ' + (currentOrder.carType||''),
     'رقم هاتف الزبون: ' + (currentOrder.phone||''),
+    '─────────────────',
+    '📍 موقع السيارة (اضغط للفتح):',
+    (currentOrder.mapsLink||'غير محدد'),
+    (currentOrder.destMapsLink ? '🏁 الوجهة (اضغط للفتح):\n' + currentOrder.destMapsLink : ''),
+    '─────────────────',
     'السائق المعين: ' + (currentOrder.driver?currentOrder.driver.name:''),
     '─────────────────',
     'سبب الإلغاء: ' + reason,
