@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>خدمات طوارئ للسيارات</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--primary:#0D1B2A;
+--secondary:#1B3A4B;
+--accent:#E63946;
+--accent2:#F4A261;
+--gold:#F4A261;
+--light:#F1FAEE;
+--white:#fff;
+--gray:#A8DADC;
+--green:#22C55E;
+--card:rgba(255,255,255,.04);
+--border:rgba(244,162,97,.15);
+}
+body{font-family:'Cairo',sans-serif;background:var(--primary);color:var(--white);overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+
+/* NAV */
+nav{position:fixed;top:0;width:100%;z-index:1000;background:rgba(13,27,42,.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(244,162,97,.15);transition:.3s}
+nav .container{max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center;padding:16px 24px}
+.logo{font-size:1.5rem;font-weight:900;color:var(--accent2)}
+.logo i{margin-left:8px;color:var(--accent)}
+.nav-links{display:flex;gap:32px;list-style:none;align-items:center}
+.nav-links a{font-weight:600;font-size:.95rem;transition:.3s;position:relative}
+.nav-links a:hover{color:var(--accent2)}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;right:0;width:0;height:2px;background:var(--accent2);transition:.3s}
+.nav-links a:hover::after{width:100%}
+.nav-cta{background:linear-gradient(135deg,var(--accent),#c1121f);padding:10px 24px;border-radius:50px;font-weight:700;transition:.3s;border:none;color:#fff;cursor:pointer;font-size:.95rem}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(230,57,70,.4)}
+.hamburger{display:none;font-size:1.5rem;cursor:pointer;color:var(--accent2)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(13,27,42,.97),rgba(27,58,75,.85))}
+.hero-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1600') center/cover}
+.hero .container{max-width:1200px;margin:auto;padding:120px 24px 80px;position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.hero-content h1{font-size:3.2rem;font-weight:900;line-height:1.3;margin-bottom:20px}
+.hero-content h1 span{color:var(--accent2);display:block}
+.hero-content p{font-size:1.15rem;color:rgba(255,255,255,.8);margin-bottom:36px;line-height:1.8}
+.hero-buttons{display:flex;gap:16px;flex-wrap:wrap}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#c1121f);padding:14px 36px;border-radius:50px;font-weight:700;font-size:1.05rem;border:none;color:#fff;cursor:pointer;transition:.3s;font-family:'Cairo'}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 35px rgba(230,57,70,.45)}
+.btn-secondary{background:transparent;border:2px solid var(--accent2);padding:14px 36px;border-radius:50px;font-weight:700;font-size:1.05rem;color:var(--accent2);cursor:pointer;transition:.3s;font-family:'Cairo'}
+.btn-secondary:hover{background:var(--accent2);color:var(--primary)}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px}
+.stat{text-align:center;padding:20px;background:rgba(255,255,255,.05);border-radius:16px;border:1px solid rgba(244,162,97,.15)}
+.stat h3{font-size:2rem;font-weight:900;color:var(--accent2)}
+.stat p{font-size:.85rem;color:rgba(255,255,255,.6);margin-top:4px}
+.hero-visual{position:relative;display:flex;justify-content:center;align-items:center}
+.hero-card{background:linear-gradient(145deg,rgba(27,58,75,.8),rgba(13,27,42,.9));border:1px solid rgba(244,162,97,.2);border-radius:24px;padding:40px;backdrop-filter:blur(10px)}
+.hero-card .icon-big{font-size:4rem;color:var(--accent2);margin-bottom:20px;text-align:center}
+.hero-card h3{font-size:1.3rem;text-align:center;margin-bottom:16px}
+.hero-card .features-mini{list-style:none;display:flex;flex-direction:column;gap:12px}
+.hero-card .features-mini li{display:flex;align-items:center;gap:10px;font-size:.95rem;color:rgba(255,255,255,.8)}
+.hero-card .features-mini li i{color:var(--accent2);font-size:.8rem}
+.floating-badge{position:absolute;background:var(--accent);color:#fff;padding:12px 20px;border-radius:16px;font-weight:700;font-size:.9rem;animation:floatBadge 3s ease-in-out infinite}
+.floating-badge.top{top:-10px;left:-20px}
+.floating-badge.bottom{bottom:10px;right:-20px;background:linear-gradient(135deg,#2a9d8f,#264653);animation-delay:1.5s}
+@keyframes floatBadge{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* SERVICES */
+.services{padding:100px 24px;background:linear-gradient(180deg,var(--primary),var(--secondary))}
+.services .container{max-width:1200px;margin:auto}
+.section-header{text-align:center;margin-bottom:60px}
+.section-header .badge{display:inline-block;background:rgba(244,162,97,.15);color:var(--accent2);padding:8px 20px;border-radius:50px;font-size:.85rem;font-weight:700;margin-bottom:16px}
+.section-header h2{font-size:2.5rem;font-weight:900;margin-bottom:12px}
+.section-header p{color:rgba(255,255,255,.6);font-size:1.05rem}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.service-card{background:rgba(255,255,255,.03);border:1px solid rgba(244,162,97,.1);border-radius:20px;padding:36px;transition:.4s;position:relative;overflow:hidden}
+.service-card::before{content:'';position:absolute;top:0;right:0;width:100px;height:100px;background:radial-gradient(circle,rgba(244,162,97,.1),transparent);border-radius:0 20px 0 100%}
+.service-card:hover{transform:translateY(-8px);border-color:rgba(244,162,97,.3);background:rgba(255,255,255,.06)}
+.service-card .icon{width:64px;height:64px;background:linear-gradient(135deg,rgba(244,162,97,.2),rgba(230,57,70,.15));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--accent2);margin-bottom:20px}
+.service-card h3{font-size:1.2rem;font-weight:700;margin-bottom:10px}
+.service-card p{color:rgba(255,255,255,.6);font-size:.9rem;line-height:1.7}
+
+/* WHY US */
+.why-us{padding:100px 24px;background:var(--secondary)}
+.why-us .container{max-width:1200px;margin:auto}
+.why-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.why-card{text-align:center;padding:32px 20px;border-radius:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);transition:.3s}
+.why-card:hover{background:rgba(244,162,97,.08);border-color:rgba(244,162,97,.2)}
+.why-card .num{font-size:2.5rem;font-weight:900;color:var(--accent2);margin-bottom:8px}
+.why-card h4{font-size:1rem;font-weight:700;margin-bottom:8px}
+.why-card p{font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.6}
+
+/* ORDER PAGE (overlay) */
+.order-overlay{display:none;position:fixed;inset:0;z-index:2000;background:var(--primary);overflow-y:auto}
+.order-overlay.active{display:block}
+.order-topbar{position:sticky;top:0;z-index:50;background:rgba(13,27,42,.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(244,162,97,.2);padding:14px 20px;display:flex;align-items:center;gap:12px}
+.order-topbar h2{font-weight:700;font-size:1.1rem}
+.order-topbar .back-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:#fff;padding:6px 14px;border-radius:10px;cursor:pointer;font-family:'Cairo';font-size:.9rem;transition:.3s}
+.order-topbar .back-btn:hover{background:rgba(244,162,97,.2)}
+.order-content{padding:20px;max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:16px;padding-bottom:40px}
+#map{width:100%;height:50vh;border-radius:16px;border:1px solid rgba(244,162,97,.2);position:relative}
+@media(min-width:768px){#map{height:55vh}}
+.map-hint{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:1000;background:var(--accent);color:#fff;padding:6px 16px;border-radius:50px;font-size:.8rem;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.search-group{display:flex;flex-direction:column;gap:6px}
+.search-row{display:flex;gap:8px}
+.search-wrap{position:relative;flex:1}
+.search-wrap input{width:100%;padding:10px 40px 10px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;color:#fff;font-family:'Cairo';font-size:.9rem;outline:none;transition:.3s}
+.search-wrap input:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(244,162,97,.15)}
+.search-wrap .icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.4);font-size:.85rem}
+.search-dropdown{position:absolute;top:100%;left:0;right:0;z-index:50;margin-top:4px;background:var(--secondary);border:1px solid rgba(244,162,97,.2);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.4);max-height:200px;overflow-y:auto;display:none}
+.search-dropdown.show{display:block}
+.search-dropdown button{width:100%;display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:none;border:none;color:#ddd;font-family:'Cairo';font-size:.8rem;text-align:right;cursor:pointer;line-height:1.4}
+.search-dropdown button:hover{background:rgba(244,162,97,.1)}
+.map-btn{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border:none;padding:10px 16px;border-radius:12px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'Cairo';transition:.3s;white-space:nowrap}
+.map-btn:hover{opacity:.9;transform:scale(1.02)}
+.problems{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.prob-btn{display:flex;align-items:center;gap:8px;padding:12px;border-radius:12px;border:2px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#ddd;font-family:'Cairo';font-size:.85rem;font-weight:600;cursor:pointer;transition:.3s}
+.prob-btn:hover{border-color:rgba(244,162,97,.3);background:rgba(244,162,97,.05)}
+.prob-btn.active{border-color:var(--accent2);background:rgba(244,162,97,.12);color:var(--accent2)}
+.driver-card{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px}
+.driver-card .info{flex:1}
+.driver-card .info .name{font-weight:700;font-size:.9rem}
+.driver-card .info .dist{font-size:.75rem;color:rgba(255,255,255,.5)}
+.driver-card .eta{text-align:center}
+.driver-card .eta .val{font-size:1.2rem;font-weight:700;color:var(--green)}
+.driver-card .eta .lbl{font-size:.65rem;color:rgba(255,255,255,.5)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.metric{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;text-align:center}
+.metric .lbl{font-size:.7rem;color:rgba(255,255,255,.5)}
+.metric .val{font-size:1.1rem;font-weight:700}
+.metric .unit{font-size:.6rem;color:rgba(255,255,255,.4)}
+.field{margin-bottom:0}
+.field label{font-size:.85rem;font-weight:600;display:block;margin-bottom:6px}
+.field input{width:100%;padding:10px 40px 10px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;color:#fff;font-family:'Cairo';font-size:.9rem;outline:none;transition:.3s}
+.field input:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(244,162,97,.15)}
+.field .icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.4)}
+.submit-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#c1121f);color:#fff;border:none;border-radius:50px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:'Cairo';transition:.3s}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 12px 35px rgba(230,57,70,.45)}
+.submit-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* CONFIRMED PAGE */
+.confirmed-overlay{display:none;position:fixed;inset:0;z-index:2000;background:var(--primary);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;gap:1.5rem;overflow-y:auto}
+.confirmed-overlay.active{display:flex}
+.confirmed-overlay .check{width:80px;height:80px;border-radius:50%;background:rgba(34,197,94,.15);display:flex;align-items:center;justify-content:center;font-size:2.5rem;animation:scaleIn .5s ease}
+@keyframes scaleIn{0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+.confirmed-overlay h2{font-size:1.5rem;font-weight:800}
+.confirmed-overlay .detail{background:rgba(255,255,255,.04);border:1px solid rgba(244,162,97,.15);border-radius:16px;padding:20px;width:100%;max-width:400px}
+.confirmed-overlay .row{display:flex;justify-content:space-between;padding:6px 0;font-size:.85rem}
+.confirmed-overlay .row .lbl{color:rgba(255,255,255,.5)}
+.confirmed-overlay .row .val{font-weight:700}
+
+/* CONTACT */
+.contact{padding:100px 24px;background:var(--primary)}
+.contact .container{max-width:1200px;margin:auto}
+.contact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.contact-card{background:rgba(255,255,255,.04);border:1px solid rgba(244,162,97,.1);border-radius:20px;padding:36px;text-align:center;transition:.3s}
+.contact-card:hover{transform:translateY(-5px);border-color:rgba(244,162,97,.25)}
+.contact-card .icon{width:60px;height:60px;background:linear-gradient(135deg,var(--accent2),var(--accent));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#fff;margin:0 auto 20px}
+.contact-card h4{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.contact-card p{color:rgba(255,255,255,.6);font-size:.95rem;line-height:1.6}
+.contact-card a{color:var(--accent2);font-weight:600;transition:.3s}
+.contact-card a:hover{color:var(--accent)}
+
+/* FOOTER */
+footer{background:rgba(0,0,0,.3);border-top:1px solid rgba(244,162,97,.1);padding:40px 24px}
+footer .container{max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+footer p{color:rgba(255,255,255,.5);font-size:.9rem}
+.social-links{display:flex;gap:12px}
+.social-links a{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;transition:.3s;font-size:.9rem}
+.social-links a:hover{background:var(--accent2);color:var(--primary)}
+
+/* WhatsApp */
+.whatsapp-float{position:fixed;bottom:24px;right:24px;width:56px;height:56px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:#fff;z-index:999;transition:.3s;box-shadow:0 4px 15px rgba(37,211,102,.4)}
+.whatsapp-float:hover{transform:scale(1.1)}
+
+/* SCROLL TOP */
+.scroll-top{position:fixed;bottom:24px;left:24px;width:48px;height:48px;background:linear-gradient(135deg,var(--accent2),var(--accent));border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:.3s;z-index:999;border:none;color:#fff;font-size:1.1rem}
+.scroll-top.show{opacity:1}
+.scroll-top:hover{transform:translateY(-3px)}
+
+/* FADE UP */
+.fade-up{opacity:0;transform:translateY(30px);transition:.6s ease}
+.fade-up.visible{opacity:1;transform:translateY(0)}
+
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+
+/* RESPONSIVE */
+@media(max-width:968px){
+.hero .container{grid-template-columns:1fr;text-align:center}
+.hero-content h1{font-size:2.2rem}
+.hero-buttons{justify-content:center}
+.hero-visual{margin-top:20px}
+.hero-stats{grid-template-columns:repeat(3,1fr)}
+.services-grid{grid-template-columns:1fr 1fr}
+.why-grid{grid-template-columns:1fr 1fr}
+.contact-grid{grid-template-columns:1fr}
+.nav-links{display:none;position:absolute;top:100%;right:0;left:0;background:rgba(13,27,42,.98);flex-direction:column;padding:24px;gap:20px}
+.nav-links.active{display:flex}
+.hamburger{display:block}
+.floating-badge{display:none}
+}
+@media(max-width:600px){
+.hero-content h1{font-size:1.8rem}
+.hero-stats{grid-template-columns:1fr 1fr}
+.services-grid{grid-template-columns:1fr}
+.why-grid{grid-template-columns:1fr 1fr}
+.problems{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+<div class="container">
+<a href="#" class="logo"><i class="fas fa-car-crash"></i> خدمات طوارئ</a>
+<ul class="nav-links" id="navLinks">
+<li><a href="#hero">الرئيسية</a></li>
+<li><a href="#services">خدماتنا</a></li>
+<li><a href="#why">لماذا نحن</a></li>
+<li><a href="#contact">اتصل بنا</a></li>
+</ul>
+<button class="nav-cta" onclick="openOrderPage()"><i class="fas fa-bolt"></i> ابدأ الطلب</button>
+<div class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('active')"><i class="fas fa-bars"></i></div>
+</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+<div class="hero-bg"></div>
+<div class="container">
+<div class="hero-content">
+<h1>خدمة طوارئ <span>سيارات فورية</span></h1>
+<p>سحب ونقل السيارات، تبديل البطاريات والإطارات، وفتح الأقفال. نصلك أينما كنت خلال دقائق مع فريق محترف يعمل على مدار الساعة.</p>
+<div class="hero-buttons">
+<button class="btn-primary" onclick="openOrderPage()"><i class="fas fa-bolt"></i> ابدأ الطلب الآن</button>
+<a href="#services" class="btn-secondary"><i class="fas fa-th-large"></i> خدماتنا</a>
+</div>
+<div class="hero-stats">
+<div class="stat"><h3>50+</h3><p>سائق متوفر</p></div>
+<div class="stat"><h3>8 د</h3><p>متوسط الوصول</p></div>
+<div class="stat"><h3>24/7</h3><p>خدمة مستمرة</p></div>
+</div>
+</div>
+<div class="hero-visual">
+<div class="floating-badge top"><i class="fas fa-check-circle"></i> متاحون الآن</div>
+<div class="hero-card">
+<div class="icon-big">🚗</div>
+<h3>طوارئ سيارات سريعة</h3>
+<ul class="features-mini">
+<li><i class="fas fa-check"></i> سحب ونقل احترافي</li>
+<li><i class="fas fa-check"></i> تبديل بطاريات وإطارات</li>
+<li><i class="fas fa-check"></i> فتح أقفال بدون ضرر</li>
+<li><i class="fas fa-check"></i> أسعار شفافة ومعقولة</li>
+</ul>
+</div>
+<div class="floating-badge bottom"><i class="fas fa-star"></i> تقييم 4.9</div>
+</div>
+</div>
+</section>
+
+<!-- SERVICES -->
+<section class="services" id="services">
+<div class="container">
+<div class="section-header fade-up">
+<span class="badge">خدماتنا</span>
+<h2>خدمات متكاملة لسيارتك</h2>
+<p>نوفر لك كل ما تحتاجه في حالات الطوارئ</p>
+</div>
+<div class="services-grid">
+<div class="service-card fade-up"><div class="icon"><i class="fas fa-truck-moving"></i></div><h3>سحب ونقل السيارات</h3><p>نقل سيارتك بأمان إلى أي وجهة باستخدام سطحات حديثة ومجهزة بأعلى معايير السلامة.</p></div>
+<div class="service-card fade-up"><div class="icon"><i class="fas fa-car-battery"></i></div><h3>شحن وتبديل البطاريات</h3><p>خدمة فورية لشحن أو تبديل بطارية سيارتك في موقعك مباشرة بأفضل البطاريات.</p></div>
+<div class="service-card fade-up"><div class="icon"><i class="fas fa-tire"></i></div><h3>تبديل الإطارات</h3><p>تبديل إطارات سيارتك في مكانك مع توفير إطارات بديلة عند الحاجة.</p></div>
+<div class="service-card fade-up"><div class="icon"><i class="fas fa-key"></i></div><h3>فتح الأقفال</h3><p>فتح أقفال السيارات المغلقة بتقنيات آمنة دون أي ضرر للسيارة.</p></div>
+<div class="service-card fade-up"><div class="icon"><i class="fas fa-gas-pump"></i></div><h3>توصيل الوقود</h3><p>نصلك بالوقود أينما كنت. لا داعي للقلق إذا نفد وقود سيارتك على الطريق.</p></div>
+<div class="service-card fade-up"><div class="icon"><i class="fas fa-wrench"></i></div><h3>إصلاح في الموقع</h3><p>فنيون متخصصون لإصلاح الأعطال البسيطة في موقعك مباشرة وبأسرع وقت.</p></div>
+</div>
+</div>
+</section>
+
+<!-- WHY US -->
+<section class="why-us" id="why">
+<div class="container">
+<div class="section-header fade-up">
+<span class="badge">لماذا نحن</span>
+<h2>ما يميزنا عن غيرنا</h2>
+<p>خبرة واحترافية تجعلنا الخيار الأول</p>
+</div>
+<div class="why-grid">
+<div class="why-card fade-up"><div class="num">⚡</div><h4>سرعة الاستجابة</h4><p>نصلك خلال 15 دقيقة أو أقل في معظم المناطق</p></div>
+<div class="why-card fade-up"><div class="num">🛡️</div><h4>فريق محترف</h4><p>فنيون معتمدون ومدربون على أعلى مستوى</p></div>
+<div class="why-card fade-up"><div class="num">💰</div><h4>أسعار شفافة</h4><p>لا رسوم مخفية - تعرف على السعر قبل الخدمة</p></div>
+<div class="why-card fade-up"><div class="num">🕐</div><h4>متاحون 24/7</h4><p>نخدمك على مدار الساعة طوال أيام الأسبوع</p></div>
+</div>
+</div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+<div class="container">
+<div class="section-header fade-up">
+<span class="badge">تواصل معنا</span>
+<h2>نحن هنا لمساعدتك</h2>
+<p>تواصل معنا بأي طريقة تناسبك</p>
+</div>
+<div class="contact-grid">
+<div class="contact-card fade-up"><div class="icon"><i class="fas fa-phone-alt"></i></div><h4>اتصل بنا</h4><p><a href="tel:+966500000000">0500 000 000</a></p><p><a href="tel:+966500000001">0500 000 001</a></p></div>
+<div class="contact-card fade-up"><div class="icon"><i class="fab fa-whatsapp"></i></div><h4>واتساب</h4><p><a href="https://wa.me/966500000000">راسلنا على الواتساب</a></p><p>رد فوري على مدار الساعة</p></div>
+<div class="contact-card fade-up"><div class="icon"><i class="fas fa-map-marker-alt"></i></div><h4>الموقع</h4><p>المملكة العربية السعودية</p><p>نغطي جميع المناطق</p></div>
+</div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+<div class="container">
+<p>© 2024 خدمات طوارئ للسيارات - جميع الحقوق محفوظة</p>
+<div class="social-links">
+<a href="#"><i class="fab fa-twitter"></i></a>
+<a href="#"><i class="fab fa-instagram"></i></a>
+<a href="#"><i class="fab fa-snapchat-ghost"></i></a>
+<a href="#"><i class="fab fa-tiktok"></i></a>
+</div>
+</div>
+</footer>
+
+<!-- WhatsApp Float -->
+<a href="https://wa.me/966500000000" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
+<!-- Scroll Top -->
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fas fa-chevron-up"></i></button>
+
+<!-- ============ ORDER OVERLAY ============ -->
+<div class="order-overlay" id="orderOverlay">
+<div class="order-topbar">
+<button class="back-btn" onclick="closeOrderPage()"><i class="fas fa-arrow-right"></i> رجوع</button>
+<span style="font-size:1.2rem">🚗</span>
+<h2>ابدأ الطلب</h2>
+</div>
+<div class="order-content">
+<div id="map"></div>
+<!-- Car location -->
+<div class="search-group">
+<label style="font-size:.85rem;font-weight:700">📍 موقع السيارة</label>
+<div class="search-row">
+<div class="search-wrap" id="carSearchWrap">
+<span class="icon"><i class="fas fa-search"></i></span>
+<input id="carSearchInput" onfocus="showDropdown('car')" oninput="debounceSearch(this.value,'car')" placeholder="ابحث عن موقع السيارة...">
+<div class="search-dropdown" id="carDropdown"></div>
+</div>
+<button class="map-btn" id="carMapBtn" onclick="toggleSelect('car')">📍 الخريطة</button>
+</div>
+</div>
+<!-- Service type -->
+<div>
+<label style="font-size:.85rem;font-weight:700;display:block;margin-bottom:8px">🔧 نوع الخدمة</label>
+<div class="problems">
+<button class="prob-btn" onclick="selectService(this,'tow')">🚛 نقل السيارة</button>
+<button class="prob-btn" onclick="selectService(this,'repair')">🔧 تصليح بالموقع</button>
+<button class="prob-btn" onclick="selectService(this,'battery')">🔋 شحن بطارية</button>
+<button class="prob-btn" onclick="selectService(this,'tire')">🛞 تبديل إطارات</button>
+</div>
+</div>
+<!-- Destination -->
+<div class="search-group" id="destGroup" style="display:none">
+<label style="font-size:.85rem;font-weight:700">🧭 الوجهة</label>
+<div class="search-row">
+<div class="search-wrap" id="destSearchWrap">
+<span class="icon"><i class="fas fa-search"></i></span>
+<input id="destSearchInput" onfocus="showDropdown('dest')" oninput="debounceSearch(this.value,'dest')" placeholder="ابحث عن الوجهة...">
+<div class="search-dropdown" id="destDropdown"></div>
+</div>
+<button class="map-btn" id="destMapBtn" onclick="toggleSelect('dest')">🧭 الخريطة</button>
+</div>
+</div>
+<!-- Driver info -->
+<div id="driverInfo" style="display:none"></div>
+<div id="metricsPanel" style="display:none"></div>
+<!-- Car & phone -->
+<div class="field"><label>🚗 نوع السيارة</label><div style="position:relative"><span class="icon">🚗</span><input id="carTypeInput" placeholder="مثال: تويوتا كامري 2022"></div></div>
+<div class="field"><label>📱 رقم الهاتف</label><div style="position:relative"><span class="icon">📱</span><input id="phoneInput" placeholder="05XXXXXXXX" type="tel"></div></div>
+<div style="font-size:.75rem;color:rgba(255,255,255,.4);line-height:1.7">سيتم محاولة إصلاح السيارة في موقعك أولاً، وإذا تعذر ذلك سيتم نقلها إلى الوجهة المحددة.</div>
+<button class="submit-btn" disabled id="submitBtn" onclick="confirmOrder()"><i class="fas fa-check-circle"></i> تأكيد الطلب</button>
+</div>
+</div>
+
+<!-- ============ CONFIRMED OVERLAY ============ -->
+<div class="confirmed-overlay" id="confirmedOverlay">
+<div class="check">✅</div>
+<h2>تم العثور على أقرب سائق!</h2>
+<p style="color:rgba(255,255,255,.5)">السائق في الطريق إليك</p>
+<div class="detail" id="confirmDetail"></div>
+<div style="margin-top:16px">
+<div style="font-weight:700;margin-bottom:8px">قيّم السائق</div>
+<div id="ratingStars" style="font-size:1.8rem;cursor:pointer">
+<span onclick="rate(1)">⭐</span>
+<span onclick="rate(2)">⭐</span>
+<span onclick="rate(3)">⭐</span>
+<span onclick="rate(4)">⭐</span>
+<span onclick="rate(5)">⭐</span>
+</div>
+<div id="ratingText" style="font-size:.8rem;color:rgba(255,255,255,.4);margin-top:4px"></div>
+</div>
+<button class="btn-primary" onclick="closeOrderPage()" style="margin-top:16px"><i class="fas fa-plus-circle"></i> طلب جديد</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// Scroll top
+window.addEventListener('scroll',()=>{document.getElementById('scrollTop').classList.toggle('show',window.scrollY>400)});
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth'});document.getElementById('navLinks').classList.remove('active')})});
+// Fade up
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.15});
+document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+
+// ============ ORDER SYSTEM ============
+let map, carMarker, destMarker, routeLine, selectMode=null, carLoc=null, destLoc=null, selectedProblem='';
+let driverMarkers={};
+let searchTimers={car:null,dest:null};
+
+const DRIVERS=[
+{id:"d1",name:"أحمد السعيد",phone:"0501234567",plate:"أ ب ج 1234",rating:4.8,pos:[24.74,46.68],speed:40},
+{id:"d2",name:"خالد المالكي",phone:"0509876543",plate:"د هـ و 5678",rating:4.5,pos:[24.68,46.72],speed:35},
+{id:"d3",name:"محمد الحربي",phone:"0505551234",plate:"ز ح ط 9012",rating:4.9,pos:[24.78,46.65],speed:45},
+{id:"d4",name:"فهد الدوسري",phone:"0503334455",plate:"ي ك ل 3456",rating:4.3,pos:[24.65,46.75],speed:38},
+{id:"d5",name:"عبدالله الشمري",phone:"0507778899",plate:"م ن س 7890",rating:4.7,pos:[24.72,46.60],speed:42},
+{id:"d6",name:"سعود العتيبي",phone:"0502223344",plate:"ع ف ص 1357",rating:4.6,pos:[24.62,46.70],speed:36},
+{id:"d7",name:"ناصر القحطاني",phone:"0508889900",plate:"ق ر ش 2468",rating:4.4,pos:[24.76,46.62],speed:37},
+{id:"d8",name:"بندر الغامدي",phone:"0506667788",plate:"ت ث خ 3579",rating:4.7,pos:[24.70,46.78],speed:43}
+];
+
+function haversine(a,b){const R=6371,dLat=(b[0]-a[0])*Math.PI/180,dLon=(b[1]-a[1])*Math.PI/180,la=a[0]*Math.PI/180,lb=b[0]*Math.PI/180,x=Math.sin(dLat/2)**2+Math.cos(la)*Math.cos(lb)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
+function calcPrice(d){
+if(selectedProblem==='battery')return 150;
+if(selectedProblem==='tire')return 120;
+if(selectedProblem==='repair')return 200;
+if(selectedProblem==='tow')return 250+Math.round(d)*15;
+return 200+Math.round(d)*15;
+}
+function calcETA(d,s){return Math.max(2,Math.round(d/s*60))}
+function findNearest(pos){let n=DRIVERS[0],m=Infinity;DRIVERS.forEach(d=>{const dist=haversine(pos,d.pos);if(dist<m){m=dist;n=d}});return{driver:n,dist:m}}
+
+function craneIcon(isNearest){
+const bg=isNearest?'#22C55E':'#F4A261',sz=isNearest?38:32;
+return L.divIcon({html:'<div style="background:'+bg+';border-radius:50%;width:'+sz+'px;height:'+sz+'px;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3);font-size:'+(isNearest?18:16)+'px;'+(isNearest?'animation:pulse 1.5s infinite':'')+'">🚗</div>',className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
+}
+const carIcon=L.divIcon({html:'<div style="background:#3B82F6;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3);font-size:16px">📍</div>',className:'',iconSize:[32,32],iconAnchor:[16,16]});
+const pinIcon=L.divIcon({html:'<div style="background:#E63946;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3);font-size:16px">🏁</div>',className:'',iconSize:[32,32],iconAnchor:[16,16]});
+
+function initMap(){
+map=L.map('map').setView([24.71,46.68],11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
+map.on('click',e=>{
+if(selectMode==='car'){setCarLoc([e.latlng.lat,e.latlng.lng]);selectMode='dest';updateMapHint()}
+else if(selectMode==='dest'){setDestLoc([e.latlng.lat,e.latlng.lng]);selectMode=null;updateMapHint()}
+});
+DRIVERS.forEach(d=>{driverMarkers[d.id]=L.marker(d.pos,{icon:craneIcon(false)}).addTo(map).bindPopup('🚗 '+d.name+'<br>⭐ '+d.rating)});
+if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{const loc=[p.coords.latitude,p.coords.longitude];map.setView(loc,13);setCarLoc(loc)},()=>{},{enableHighAccuracy:true})}
+setInterval(moveDrivers,2000);
+}
+
+function moveDrivers(){
+DRIVERS.forEach(d=>{
+const a=Math.random()*2*Math.PI,dd=.0003+Math.random()*.0005;
+d.pos=[d.pos[0]+Math.cos(a)*dd,d.pos[1]+Math.sin(a)*dd];
+if(driverMarkers[d.id])driverMarkers[d.id].setLatLng(d.pos);
+});
+updateInfo();
+}
+
+function setCarLoc(loc){
+carLoc=loc;
+if(carMarker)map.removeLayer(carMarker);
+carMarker=L.marker(loc,{icon:carIcon}).addTo(map).bindPopup('موقع سيارتك 📍');
+updateRoute();updateInfo();checkSubmit();
+}
+function setDestLoc(loc){
+destLoc=loc;
+if(destMarker)map.removeLayer(destMarker);
+destMarker=L.marker(loc,{icon:pinIcon}).addTo(map).bindPopup('الوجهة 🏁');
+updateRoute();updateInfo();checkSubmit();
+}
+function updateRoute(){
+if(routeLine)map.removeLayer(routeLine);
+if(carLoc&&destLoc){routeLine=L.polyline([carLoc,destLoc],{color:'#F4A261',weight:4,dashArray:'10,6'}).addTo(map);map.fitBounds(L.latLngBounds([carLoc,destLoc]),{padding:[50,50]})}
+else if(carLoc)map.setView(carLoc,13);
+}
+function updateInfo(){
+if(!carLoc)return;
+const{driver:nd,dist:dd}=findNearest(carLoc);
+const eta=calcETA(dd,nd.speed);
+DRIVERS.forEach(d=>{if(driverMarkers[d.id])driverMarkers[d.id].setIcon(craneIcon(d.id===nd.id))});
+document.getElementById('driverInfo').style.display='flex';
+document.getElementById('driverInfo').className='driver-card';
+document.getElementById('driverInfo').innerHTML='<span style="font-size:1.5rem">🚗</span><div class="info"><div class="name">'+nd.name+'</div><div class="dist">يبعد '+dd.toFixed(1)+' كم • ⭐ '+nd.rating+'</div></div><div class="eta"><div class="val">'+eta+' د</div><div class="lbl">وقت الوصول</div></div>';
+if(carLoc&&destLoc){
+const rd=haversine(carLoc,destLoc),price=calcPrice(rd);
+document.getElementById('metricsPanel').style.display='grid';
+document.getElementById('metricsPanel').className='metrics';
+document.getElementById('metricsPanel').innerHTML='<div class="metric"><div class="lbl">المسافة</div><div class="val">'+rd.toFixed(1)+' كم</div></div><div class="metric"><div class="lbl">وقت الوصول</div><div class="val" style="color:var(--accent2)">'+eta+' د</div></div><div class="metric"><div class="lbl">السعر</div><div class="val" style="color:var(--green)">'+price+' ر.س</div></div>';
+}
+}
+function updateMapHint(){
+let old=document.querySelector('.map-hint');if(old)old.remove();
+if(selectMode){const h=document.createElement('div');h.className='map-hint';h.textContent=selectMode==='car'?'انقر لتحديد موقع السيارة 📍':'انقر لتحديد الوجهة 🏁';document.getElementById('map').appendChild(h)}
+}
+function toggleSelect(t){selectMode=selectMode===t?null:(t==='dest'?'dest':'car');updateMapHint()}
+
+function debounceSearch(val,type){if(searchTimers[type])clearTimeout(searchTimers[type]);searchTimers[type]=setTimeout(()=>searchLocation(val,type),400)}
+async function searchLocation(q,type){
+if(q.trim().length<2){hideDropdown(type);return}
+try{
+const res=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(q));
+const data=await res.json();
+const dd=document.getElementById(type==='car'?'carDropdown':'destDropdown');
+if(data.length===0){hideDropdown(type);return}
+dd.innerHTML='';
+data.forEach(r=>{const b=document.createElement('button');b.textContent='📍 '+r.display_name;b.onclick=()=>{
+const loc=[parseFloat(r.lat),parseFloat(r.lon)];
+if(type==='car'){setCarLoc(loc);document.getElementById('carSearchInput').value=r.display_name.split(',').slice(0,2).join(',')}
+else{setDestLoc(loc);document.getElementById('destSearchInput').value=r.display_name.split(',').slice(0,2).join(',')}
+hideDropdown(type);
+};dd.appendChild(b)});
+dd.classList.add('show');
+}catch(e){}
+}
+function showDropdown(type){const dd=document.getElementById(type==='car'?'carDropdown':'destDropdown');if(dd.children.length>0)dd.classList.add('show')}
+function hideDropdown(type){document.getElementById(type==='car'?'carDropdown':'destDropdown').classList.remove('show')}
+document.addEventListener('click',e=>{if(!document.getElementById('carSearchWrap').contains(e.target))hideDropdown('car');if(document.getElementById('destSearchWrap')&&!document.getElementById('destSearchWrap').contains(e.target))hideDropdown('dest')});
+
+function selectService(btn,id){
+document.querySelectorAll('.prob-btn').forEach(b=>b.classList.remove('active'));
+btn.classList.add('active');
+selectedProblem=id;
+const destGroup=document.getElementById('destGroup');
+if(id==='tow'){destGroup.style.display='flex';if(!document.getElementById('destSearchInput').value)destLoc=null}
+else{destGroup.style.display='none';destLoc=carLoc}
+checkSubmit();
+}
+function checkSubmit(){const ok=selectedProblem&&document.getElementById('carTypeInput').value&&document.getElementById('phoneInput').value&&carLoc&&destLoc;document.getElementById('submitBtn').disabled=!ok}
+document.getElementById('carTypeInput').addEventListener('input',checkSubmit);
+document.getElementById('phoneInput').addEventListener('input',checkSubmit);
+
+function openOrderPage(){
+document.getElementById('orderOverlay').classList.add('active');
+document.body.style.overflow='hidden';
+setTimeout(()=>initMap(),150);
+}
+function closeOrderPage(){
+document.getElementById('orderOverlay').classList.remove('active');
+document.getElementById('confirmedOverlay').classList.remove('active');
+document.body.style.overflow='';
+carLoc=destLoc=null;selectedProblem='';
+if(map){map.remove();map=null;driverMarkers={};carMarker=destMarker=routeLine=null}
+document.querySelectorAll('.prob-btn').forEach(b=>b.classList.remove('active'));
+document.getElementById('destGroup').style.display='none';
+document.getElementById('driverInfo').style.display='none';
+document.getElementById('metricsPanel').style.display='none';
+document.getElementById('carSearchInput').value='';
+document.getElementById('destSearchInput').value='';
+document.getElementById('carTypeInput').value='';
+document.getElementById('phoneInput').value='';
+document.getElementById('submitBtn').disabled=true;
+}
+function confirmOrder(){
+const{driver:nd,dist:dd}=findNearest(carLoc);
+const rd=destLoc?haversine(carLoc,destLoc):0,price=calcPrice(rd),eta=calcETA(dd,nd.speed);
+document.getElementById('orderOverlay').classList.remove('active');
+document.getElementById('confirmedOverlay').classList.add('active');
+document.getElementById('confirmDetail').innerHTML='<div class="row"><span class="lbl">السائق</span><span class="val">'+nd.name+'</span></div><div class="row"><span class="lbl">رقم اللوحة</span><span class="val">'+nd.plate+'</span></div><div class="row"><span class="lbl">الهاتف</span><span class="val">'+nd.phone+'</span></div><div class="row"><span class="lbl">التقييم</span><span class="val">⭐ '+nd.rating+'</span></div><hr style="border-color:rgba(255,255,255,.1);margin:8px 0"><div class="row"><span class="lbl">المسافة</span><span class="val">'+rd.toFixed(1)+' كم</span></div><div class="row"><span class="lbl">وقت الوصول</span><span class="val" style="color:var(--accent2)">'+eta+' دقيقة</span></div><div class="row"><span class="lbl">السعر</span><span class="val" style="color:var(--green);font-size:1.1rem">'+price+' ر.س</span></div>';
+}
+
+let selectedRating=0;
+function rate(n){
+selectedRating=n;
+const stars=document.querySelectorAll('#ratingStars span');
+stars.forEach((s,i)=>{s.style.opacity=i<n?'1':'0.3'});
+document.getElementById('ratingText').innerText='تم التقييم: '+n+' نجوم ⭐';
+}
+</script>
+</body>
+</html>
